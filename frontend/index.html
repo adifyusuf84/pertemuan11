@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perpustakaan Digital — Manajemen Buku</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* =============================================
+           DESIGN TOKENS
+           Palet: Kertas tua, tinta gelap, aksen teal-hijau buku
+           Tipografi: Literata (display serif) + Inter (UI)
+        ============================================= */
+        :root {
+            --cream:       #F7F3EC;
+            --cream-dark:  #EDE7DA;
+            --ink:         #1A1714;
+            --ink-soft:    #4A4542;
+            --ink-muted:   #8A847C;
+            --teal:        #1D6E6A;
+            --teal-light:  #2A9490;
+            --teal-pale:   #E5F4F3;
+            --red:         #C0392B;
+            --red-pale:    #FDECEA;
+            --amber:       #D4830E;
+            --amber-pale:  #FEF5E7;
+            --white:       #FFFFFF;
+            --border:      #D9D2C8;
+            --shadow-sm:   0 1px 3px rgba(26,23,20,.08);
+            --shadow-md:   0 4px 16px rgba(26,23,20,.12);
+            --radius:      8px;
+            --radius-lg:   14px;
+            --font-serif:  'Literata', Georgia, serif;
+            --font-sans:   'Inter', system-ui, sans-serif;
+        }
+
+        /* =============================================
+           RESET & BASE
+        ============================================= */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-sans);
+            background: var(--cream);
+            color: var(--ink);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* =============================================
+           HEADER
+        ============================================= */
+        header {
+            background: var(--ink);
+            color: var(--cream);
+            padding: 0 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(0,0,0,.3);
+        }
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+            gap: 1rem;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: var(--teal);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+        .logo-text {
+            font-family: var(--font-serif);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--cream);
+            line-height: 1.1;
+        }
+        .logo-sub {
+            font-size: .65rem;
+            color: var(--ink-muted);
+            font-family: var(--font-sans);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            display: block;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        /* =============================================
+           BUTTONS
+        ============================================= */
+        .btn {
+            display: inline-flex; align-items: center; gap: .4rem;
+            font-family: var(--font-sans);
+            font-size: .875rem; font-weight: 500;
+            padding: .5rem 1rem;
+            border-radius: var(--radius);
+            border: none; cursor: pointer;
+            transition: all .15s ease;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .btn:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+        .btn-primary   { background: var(--teal); color: #fff; }
+        .btn-primary:hover { background: var(--teal-light); }
+        .btn-danger    { background: var(--red); color: #fff; }
+        .btn-danger:hover { background: #a93226; }
+        .btn-outline   { background: transparent; color: var(--teal); border: 1.5px solid var(--teal); }
+        .btn-outline:hover { background: var(--teal-pale); }
+        .btn-ghost     { background: transparent; color: var(--ink-soft); border: 1.5px solid var(--border); }
+        .btn-ghost:hover { background: var(--cream-dark); }
+        .btn-sm { font-size: .8rem; padding: .35rem .75rem; }
+
+        /* =============================================
+           MAIN LAYOUT
+        ============================================= */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* =============================================
+           HERO / STATS BAR
+        ============================================= */
+        .stats-bar {
+            background: var(--ink);
+            color: var(--cream);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem 1.75rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .stats-bar h1 {
+            font-family: var(--font-serif);
+            font-size: 1.4rem;
+            flex: 1;
+            min-width: 160px;
+        }
+        .stats-bar h1 span { color: var(--teal-light); }
+        .stat-item { text-align: center; }
+        .stat-num { font-size: 1.6rem; font-weight: 700; color: var(--teal-light); font-family: var(--font-serif); }
+        .stat-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); }
+
+        /* =============================================
+           TOOLBAR (search + filter + add)
+        ============================================= */
+        .toolbar {
+            display: flex;
+            gap: .75rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .search-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 220px;
+        }
+        .search-icon {
+            position: absolute; left: .85rem; top: 50%; transform: translateY(-50%);
+            color: var(--ink-muted); font-size: .9rem; pointer-events: none;
+        }
+        .search-input, .filter-select {
+            width: 100%; font-family: var(--font-sans);
+            font-size: .875rem; padding: .55rem .85rem;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--white);
+            color: var(--ink);
+            transition: border-color .15s;
+        }
+        .search-input { padding-left: 2.4rem; }
+        .search-input:focus, .filter-select:focus {
+            outline: none; border-color: var(--teal);
+        }
+        .filter-select { width: auto; min-width: 150px; cursor: pointer; }
+
+        /* =============================================
+           ALERT / TOAST
+        ============================================= */
+        .toast-container {
+            position: fixed; top: 80px; right: 1.5rem;
+            z-index: 999; display: flex; flex-direction: column; gap: .5rem;
+        }
+        .toast {
+            background: var(--ink); color: var(--cream);
+            padding: .75rem 1.25rem; border-radius: var(--radius);
+            font-size: .875rem; box-shadow: var(--shadow-md);
+            display: flex; align-items: center; gap: .5rem;
+            animation: slideIn .2s ease;
+            max-width: 320px;
+        }
+        .toast.success { border-left: 3px solid var(--teal-light); }
+        .toast.error   { border-left: 3px solid var(--red); }
+        @keyframes slideIn {
+            from { transform: translateX(40px); opacity: 0; }
+            to   { transform: translateX(0); opacity: 1; }
+        }
+
+        /* =============================================
+           BOOK GRID
+        ============================================= */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .book-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-sm);
+            display: flex; flex-direction: column; gap: .75rem;
+            transition: box-shadow .2s, transform .2s;
+        }
+        .book-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .book-card-header {
+            display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem;
+        }
+        .book-number {
+            width: 32px; height: 32px; border-radius: 6px;
+            background: var(--teal-pale); color: var(--teal);
+            display: flex; align-items: center; justify-content: center;
+            font-size: .75rem; font-weight: 700; flex-shrink: 0;
+        }
+        .badge {
+            font-size: .7rem; padding: .2rem .55rem;
+            border-radius: 999px; font-weight: 500;
+            background: var(--cream-dark); color: var(--ink-soft);
+        }
+        .badge.stok-ok { background: var(--teal-pale); color: var(--teal); }
+        .badge.stok-low { background: var(--amber-pale); color: var(--amber); }
+        .badge.stok-empty { background: var(--red-pale); color: var(--red); }
+        .book-title {
+            font-family: var(--font-serif);
+            font-size: 1.05rem; font-weight: 600;
+            line-height: 1.3; color: var(--ink);
+        }
+        .book-author { font-size: .85rem; color: var(--ink-soft); }
+        .book-meta {
+            display: flex; flex-wrap: wrap; gap: .4rem;
+        }
+        .meta-pill {
+            font-size: .72rem; padding: .15rem .5rem;
+            background: var(--cream); border: 1px solid var(--border);
+            border-radius: 4px; color: var(--ink-muted);
+        }
+        .book-desc {
+            font-size: .82rem; color: var(--ink-muted);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .book-actions {
+            display: flex; gap: .5rem; margin-top: auto; padding-top: .5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* =============================================
+           EMPTY STATE
+        ============================================= */
+        .empty-state {
+            text-align: center; padding: 4rem 2rem;
+            color: var(--ink-muted);
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+        .empty-state h3 { font-family: var(--font-serif); font-size: 1.2rem; color: var(--ink); margin-bottom: .5rem; }
+
+        /* =============================================
+           PAGINATION
+        ============================================= */
+        .pagination {
+            display: flex; justify-content: center; align-items: center; gap: .5rem;
+            flex-wrap: wrap;
+        }
+        .page-btn {
+            width: 36px; height: 36px; border-radius: var(--radius);
+            border: 1.5px solid var(--border);
+            background: var(--white); color: var(--ink);
+            font-size: .85rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .15s; font-family: var(--font-sans);
+        }
+        .page-btn:hover { border-color: var(--teal); color: var(--teal); }
+        .page-btn.active { background: var(--teal); border-color: var(--teal); color: #fff; }
+        .page-btn:disabled { opacity: .4; cursor: not-allowed; }
+        .page-info { font-size: .85rem; color: var(--ink-muted); padding: 0 .5rem; }
+
+        /* =============================================
+           LOADING SKELETON
+        ============================================= */
+        .skeleton { background: linear-gradient(90deg, var(--cream-dark) 25%, var(--border) 50%, var(--cream-dark) 75%);
+            background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: var(--radius); }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .sk-card { height: 200px; }
+
+        /* =============================================
+           MODAL
+        ============================================= */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(26,23,20,.55);
+            z-index: 200;
+            display: flex; align-items: center; justify-content: center;
+            padding: 1rem;
+            opacity: 0; pointer-events: none; transition: opacity .2s;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
+        .modal {
+            background: var(--white); border-radius: var(--radius-lg);
+            width: 100%; max-width: 560px; max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,.25);
+            transform: translateY(20px); transition: transform .2s;
+        }
+        .modal-overlay.open .modal { transform: translateY(0); }
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .modal-title { font-family: var(--font-serif); font-size: 1.1rem; }
+        .modal-close {
+            width: 32px; height: 32px; border-radius: 6px;
+            border: none; background: var(--cream-dark);
+            cursor: pointer; font-size: 1.1rem;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--ink-soft); transition: background .15s;
+        }
+        .modal-close:hover { background: var(--border); }
+        .modal-body { padding: 1.5rem; }
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex; gap: .75rem; justify-content: flex-end;
+        }
+
+        /* =============================================
+           FORM
+        ============================================= */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-group { display: flex; flex-direction: column; gap: .35rem; }
+        .form-group.full { grid-column: 1 / -1; }
+        label { font-size: .8rem; font-weight: 500; color: var(--ink-soft); }
+        label .req { color: var(--red); }
+        .form-control {
+            font-family: var(--font-sans); font-size: .875rem;
+            padding: .55rem .85rem;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--white); color: var(--ink);
+            transition: border-color .15s; width: 100%;
+        }
+        .form-control:focus { outline: none; border-color: var(--teal); }
+        .form-control.invalid { border-color: var(--red); }
+        textarea.form-control { resize: vertical; min-height: 80px; }
+        .field-error { font-size: .75rem; color: var(--red); }
+
+        /* =============================================
+           CONFIRM DELETE MODAL
+        ============================================= */
+        .confirm-icon { font-size: 2.5rem; text-align: center; margin-bottom: .75rem; }
+        .confirm-text { text-align: center; color: var(--ink-soft); font-size: .95rem; }
+        .confirm-book { font-weight: 600; color: var(--ink); font-family: var(--font-serif); }
+
+        /* =============================================
+           LOADING OVERLAY
+        ============================================= */
+        .loading-indicator {
+            position: fixed; top: 64px; left: 0; right: 0; z-index: 999;
+            height: 3px;
+            background: linear-gradient(90deg, var(--teal), var(--teal-light));
+            animation: progress 1s ease-in-out infinite;
+            display: none;
+        }
+        .loading-indicator.active { display: block; }
+        @keyframes progress { 0%,100% { transform: scaleX(.3) translateX(-100%); } 50% { transform: scaleX(.7) translateX(30%); } }
+
+        /* =============================================
+           RESPONSIVE — TABLET (≤768px)
+        ============================================= */
+        @media (max-width: 768px) {
+            .stats-bar { gap: 1.25rem; padding: 1rem 1.25rem; }
+            .stats-bar h1 { font-size: 1.15rem; }
+            .books-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+            .form-grid { grid-template-columns: 1fr; }
+            .header-inner { height: 56px; }
+            .logo-text { font-size: 1rem; }
+            main { padding: 1.25rem 1rem; }
+        }
+
+        /* =============================================
+           RESPONSIVE — MOBILE (≤480px)
+        ============================================= */
+        @media (max-width: 480px) {
+            .stats-bar { flex-direction: column; align-items: flex-start; gap: .75rem; }
+            .stats-bar .stats-group { display: flex; gap: 1.5rem; }
+            .toolbar { flex-direction: column; }
+            .search-wrap, .filter-select { width: 100%; }
+            .btn-add-text { display: none; }
+            .books-grid { grid-template-columns: 1fr; }
+            .toast-container { left: 1rem; right: 1rem; }
+            .toast { max-width: 100%; }
+            .modal { max-height: 95vh; }
+            .book-actions .btn-sm { flex: 1; justify-content: center; }
+        }
+
+        /* =============================================
+           RESPONSIVE — LARGE DESKTOP (≥1100px)
+        ============================================= */
+        @media (min-width: 1100px) {
+            .books-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* =============================================
+           ACCESSIBILITY
+        ============================================= */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loading Bar -->
+<div class="loading-indicator" id="loadingBar"></div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Header -->
+<header>
+    <div class="header-inner">
+        <a class="logo" href="#">
+            <span class="logo-icon">📚</span>
+            <span class="logo-text">
+                Perpustakaan
+                <span class="logo-sub">Manajemen Koleksi Buku</span>
+            </span>
+        </a>
+        <div class="header-actions">
+            <button class="btn btn-primary" onclick="openModal()">
+                <span>＋</span>
+                <span class="btn-add-text">Tambah Buku</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main>
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <h1>Koleksi <span>Buku Digital</span></h1>
+        <div class="stats-group" style="display:flex;gap:2rem;flex-wrap:wrap;">
+            <div class="stat-item">
+                <div class="stat-num" id="statTotal">—</div>
+                <div class="stat-label">Total Buku</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num" id="statPage">1</div>
+                <div class="stat-label">Halaman</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input class="search-input" id="searchInput" type="text"
+                placeholder="Cari judul atau pengarang…" autocomplete="off">
+        </div>
+        <select class="filter-select" id="filterKategori" onchange="applyFilter()">
+            <option value="">Semua Kategori</option>
+            <option value="Novel">Novel</option>
+            <option value="Teknologi">Teknologi</option>
+            <option value="Filsafat">Filsafat</option>
+            <option value="Sejarah">Sejarah</option>
+            <option value="Sains">Sains</option>
+            <option value="Bisnis">Bisnis</option>
+            <option value="Pendidikan">Pendidikan</option>
+            <option value="Lainnya">Lainnya</option>
+        </select>
+        <button class="btn btn-ghost" onclick="resetFilter()">Reset</button>
+    </div>
+
+    <!-- Book Grid -->
+    <div id="booksGrid" class="books-grid">
+        <!-- Skeleton while loading -->
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="pagination"></div>
+</main>
+
+<!-- =============================================
+     MODAL: FORM TAMBAH / EDIT BUKU
+============================================= -->
+<div class="modal-overlay" id="formModal" onclick="closeOnOverlay(event)">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalTitle">Tambah Buku Baru</h2>
+            <button class="modal-close" onclick="closeModal()" aria-label="Tutup">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label>Judul Buku <span class="req">*</span></label>
+                    <input class="form-control" id="f-judul" placeholder="Masukkan judul buku">
+                    <span class="field-error" id="err-judul"></span>
+                </div>
+                <div class="form-group">
+                    <label>Pengarang <span class="req">*</span></label>
+                    <input class="form-control" id="f-pengarang" placeholder="Nama pengarang">
+                    <span class="field-error" id="err-pengarang"></span>
+                </div>
+                <div class="form-group">
+                    <label>Penerbit</label>
+                    <input class="form-control" id="f-penerbit" placeholder="Nama penerbit">
+                </div>
+                <div class="form-group">
+                    <label>Tahun Terbit</label>
+                    <input class="form-control" id="f-tahun" type="number" placeholder="contoh: 2023" min="1800" max="2099">
+                </div>
+                <div class="form-group">
+                    <label>ISBN</label>
+                    <input class="form-control" id="f-isbn" placeholder="978-xxx-xxx-xxx-x">
+                </div>
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <select class="form-control" id="f-kategori">
+                        <option value="">Pilih kategori</option>
+                        <option>Novel</option>
+                        <option>Teknologi</option>
+                        <option>Filsafat</option>
+                        <option>Sejarah</option>
+                        <option>Sains</option>
+                        <option>Bisnis</option>
+                        <option>Pendidikan</option>
+                        <option>Lainnya</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Stok</label>
+                    <input class="form-control" id="f-stok" type="number" value="1" min="0">
+                    <span class="field-error" id="err-stok"></span>
+                </div>
+                <div class="form-group full">
+                    <label>Deskripsi</label>
+                    <textarea class="form-control" id="f-deskripsi" placeholder="Deskripsi singkat buku…"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+            <button class="btn btn-primary" id="saveBtn" onclick="saveBuku()">💾 Simpan</button>
+        </div>
+    </div>
+</div>
+
+<!-- =============================================
+     MODAL: KONFIRMASI HAPUS
+============================================= -->
+<div class="modal-overlay" id="deleteModal" onclick="closeOnOverlay(event)">
+    <div class="modal" style="max-width:400px">
+        <div class="modal-header">
+            <h2 class="modal-title">Konfirmasi Hapus</h2>
+            <button class="modal-close" onclick="closeDeleteModal()">✕</button>
+        </div>
+        <div class="modal-body" style="text-align:center;padding:2rem 1.5rem">
+            <div class="confirm-icon">🗑️</div>
+            <p class="confirm-text">
+                Hapus buku<br>
+                <span class="confirm-book" id="deleteBookTitle"></span>?<br><br>
+                <small>Tindakan ini tidak dapat dibatalkan.</small>
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeDeleteModal()">Batal</button>
+            <button class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">🗑️ Hapus</button>
+        </div>
+    </div>
+</div>
+
+<!-- =============================================
+     JAVASCRIPT
+============================================= -->
+<script>
+// =============================================
+// CONFIG: Ganti dengan URL API Anda
+// =============================================
+const API_BASE = 'http://localhost/perpustakaan/api/buku';
+
+// State
+let state = {
+    buku: [], page: 1, totalPages: 1, total: 0,
+    search: '', kategori: '', editId: null, deleteId: null
+};
+
+// =============================================
+// FETCH: Load Buku
+// =============================================
+async function loadBuku() {
+    setLoading(true);
+    const params = new URLSearchParams({
+        page: state.page, limit: 9,
+        ...(state.search   && { search:   state.search }),
+        ...(state.kategori && { kategori: state.kategori }),
+    });
+    try {
+        const res = await fetch(`${API_BASE}?${params}`);
+        const json = await res.json();
+        if (json.success) {
+            state.buku       = json.data.buku;
+            state.total      = json.data.pagination.total;
+            state.totalPages = json.data.pagination.total_pages;
+            document.getElementById('statTotal').textContent = state.total;
+            document.getElementById('statPage').textContent = `${state.page}/${state.totalPages}`;
+            renderBooks();
+            renderPagination();
+        } else {
+            showToast(json.message || 'Gagal memuat data.', 'error');
+            renderEmpty('Gagal memuat data dari server.');
+        }
+    } catch(e) {
+        showToast('Tidak bisa terhubung ke API. Pastikan server PHP berjalan.', 'error');
+        renderEmpty('Tidak dapat terhubung ke server API.');
+    }
+    setLoading(false);
+}
+
+// =============================================
+// RENDER: Book Cards
+// =============================================
+function renderBooks() {
+    const grid = document.getElementById('booksGrid');
+    if (!state.buku.length) {
+        grid.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1">
+                <div class="icon">📖</div>
+                <h3>Tidak ada buku ditemukan</h3>
+                <p>Coba ubah kata kunci pencarian atau tambahkan buku baru.</p>
+            </div>`;
+        return;
+    }
+    grid.innerHTML = state.buku.map((b, i) => {
+        const stokClass = b.stok == 0 ? 'stok-empty' : b.stok <= 2 ? 'stok-low' : 'stok-ok';
+        const stokText  = b.stok == 0 ? 'Habis' : `Stok: ${b.stok}`;
+        return `
+        <div class="book-card">
+            <div class="book-card-header">
+                <span class="book-number">${((state.page-1)*9)+i+1}</span>
+                <span class="badge ${stokClass}">${stokText}</span>
+            </div>
+            <div>
+                <div class="book-title">${esc(b.judul)}</div>
+                <div class="book-author">✍️ ${esc(b.pengarang)}</div>
+            </div>
+            <div class="book-meta">
+                ${b.kategori   ? `<span class="meta-pill">📂 ${esc(b.kategori)}</span>` : ''}
+                ${b.tahun_terbit ? `<span class="meta-pill">📅 ${b.tahun_terbit}</span>` : ''}
+                ${b.penerbit   ? `<span class="meta-pill">🏢 ${esc(b.penerbit)}</span>` : ''}
+                ${b.isbn       ? `<span class="meta-pill">🔖 ${esc(b.isbn)}</span>` : ''}
+            </div>
+            ${b.deskripsi ? `<p class="book-desc">${esc(b.deskripsi)}</p>` : ''}
+            <div class="book-actions">
+                <button class="btn btn-outline btn-sm" onclick="editBuku(${b.id})" style="flex:1">✏️ Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteBuku(${b.id}, '${esc(b.judul)}')" style="flex:1">🗑️ Hapus</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderEmpty(msg) {
+    document.getElementById('booksGrid').innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+            <div class="icon">⚠️</div>
+            <h3>${msg}</h3>
+            <p>Periksa konfigurasi server dan database Anda.</p>
+        </div>`;
+}
+
+// =============================================
+// RENDER: Pagination
+// =============================================
+function renderPagination() {
+    const el = document.getElementById('pagination');
+    if (state.totalPages <= 1) { el.innerHTML = ''; return; }
+    let html = `<button class="page-btn" onclick="goPage(${state.page-1})" ${state.page===1?'disabled':''}>‹</button>`;
+    for (let p = 1; p <= state.totalPages; p++) {
+        if (state.totalPages > 7 && p > 2 && p < state.totalPages - 1 && Math.abs(p - state.page) > 1) {
+            if (p === 3 || p === state.totalPages - 2) html += `<span class="page-info">…</span>`;
+            continue;
+        }
+        html += `<button class="page-btn ${p===state.page?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    }
+    html += `<button class="page-btn" onclick="goPage(${state.page+1})" ${state.page===state.totalPages?'disabled':''}>›</button>`;
+    el.innerHTML = html;
+}
+
+function goPage(p) {
+    if (p < 1 || p > state.totalPages) return;
+    state.page = p; loadBuku();
+    window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// =============================================
+// SEARCH & FILTER
+// =============================================
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        state.search = this.value.trim();
+        state.page = 1;
+        loadBuku();
+    }, 450);
+});
+
+function applyFilter() {
+    state.kategori = document.getElementById('filterKategori').value;
+    state.page = 1; loadBuku();
+}
+
+function resetFilter() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('filterKategori').value = '';
+    state.search = ''; state.kategori = ''; state.page = 1;
+    loadBuku();
+}
+
+// =============================================
+// MODAL: FORM BUKU
+// =============================================
+function openModal(id = null) {
+    state.editId = id;
+    clearForm();
+    document.getElementById('modalTitle').textContent = id ? 'Edit Data Buku' : 'Tambah Buku Baru';
+    document.getElementById('formModal').classList.add('open');
+    document.getElementById('f-judul').focus();
+}
+
+function closeModal() {
+    document.getElementById('formModal').classList.remove('open');
+}
+
+function closeOnOverlay(e) {
+    if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+}
+
+function clearForm() {
+    ['judul','pengarang','penerbit','tahun','isbn','stok','deskripsi'].forEach(f => {
+        const el = document.getElementById('f-' + f);
+        if (el) el.value = f === 'stok' ? 1 : '';
+    });
+    document.getElementById('f-kategori').value = '';
+    ['judul','pengarang','stok'].forEach(f => {
+        const err = document.getElementById('err-' + f);
+        if (err) { err.textContent = ''; }
+        const ctrl = document.getElementById('f-' + f);
+        if (ctrl) ctrl.classList.remove('invalid');
+    });
+}
+
+async function editBuku(id) {
+    setLoading(true);
+    try {
+        const res = await fetch(`${API_BASE}/${id}`);
+        const json = await res.json();
+        if (json.success) {
+            const b = json.data;
+            openModal(id);
+            document.getElementById('f-judul').value     = b.judul     || '';
+            document.getElementById('f-pengarang').value = b.pengarang || '';
+            document.getElementById('f-penerbit').value  = b.penerbit  || '';
+            document.getElementById('f-tahun').value     = b.tahun_terbit || '';
+            document.getElementById('f-isbn').value      = b.isbn      || '';
+            document.getElementById('f-kategori').value  = b.kategori  || '';
+            document.getElementById('f-stok').value      = b.stok ?? 1;
+            document.getElementById('f-deskripsi').value = b.deskripsi || '';
+        } else {
+            showToast('Gagal memuat data buku.', 'error');
+        }
+    } catch(e) { showToast('Error koneksi ke API.', 'error'); }
+    setLoading(false);
+}
+
+async function saveBuku() {
+    // Client-side validation
+    let valid = true;
+    const validate = (id, errId, check, msg) => {
+        const el = document.getElementById(id);
+        const err = document.getElementById(errId);
+        if (check(el.value)) {
+            el.classList.add('invalid'); err.textContent = msg; valid = false;
+        } else {
+            el.classList.remove('invalid'); err.textContent = '';
+        }
+    };
+    validate('f-judul',    'err-judul',    v => !v.trim(),         'Judul wajib diisi.');
+    validate('f-pengarang','err-pengarang',v => !v.trim(),         'Pengarang wajib diisi.');
+    validate('f-stok',     'err-stok',     v => v !== '' && (isNaN(v) || +v < 0), 'Stok harus angka ≥ 0.');
+    if (!valid) return;
+
+    const payload = {
+        judul:       document.getElementById('f-judul').value.trim(),
+        pengarang:   document.getElementById('f-pengarang').value.trim(),
+        penerbit:    document.getElementById('f-penerbit').value.trim(),
+        tahun_terbit:document.getElementById('f-tahun').value || null,
+        isbn:        document.getElementById('f-isbn').value.trim(),
+        kategori:    document.getElementById('f-kategori').value,
+        stok:        parseInt(document.getElementById('f-stok').value) || 0,
+        deskripsi:   document.getElementById('f-deskripsi').value.trim(),
+    };
+
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.textContent = '⏳ Menyimpan…';
+
+    try {
+        const url    = state.editId ? `${API_BASE}/${state.editId}` : API_BASE;
+        const method = state.editId ? 'PUT' : 'POST';
+        const res    = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const json   = await res.json();
+
+        if (json.success) {
+            showToast(state.editId ? 'Buku berhasil diperbarui.' : 'Buku berhasil ditambahkan.', 'success');
+            closeModal();
+            loadBuku();
+        } else {
+            // Server validation errors
+            if (json.data && typeof json.data === 'object') {
+                Object.entries(json.data).forEach(([field, msg]) => {
+                    const err = document.getElementById('err-' + field);
+                    const ctrl = document.getElementById('f-' + field);
+                    if (err) err.textContent = msg;
+                    if (ctrl) ctrl.classList.add('invalid');
+                });
+            }
+            showToast(json.message || 'Gagal menyimpan data.', 'error');
+        }
+    } catch(e) { showToast('Error koneksi ke API.', 'error'); }
+
+    btn.disabled = false; btn.innerHTML = '💾 Simpan';
+}
+
+// =============================================
+// MODAL: DELETE
+// =============================================
+function deleteBuku(id, judul) {
+    state.deleteId = id;
+    document.getElementById('deleteBookTitle').textContent = '"' + judul + '"';
+    document.getElementById('deleteModal').classList.add('open');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('open');
+    state.deleteId = null;
+}
+
+async function confirmDelete() {
+    if (!state.deleteId) return;
+    const btn = document.getElementById('confirmDeleteBtn');
+    btn.disabled = true; btn.textContent = '⏳ Menghapus…';
+
+    try {
+        const res  = await fetch(`${API_BASE}/${state.deleteId}`, { method: 'DELETE' });
+        const json = await res.json();
+        if (json.success) {
+            showToast('Buku berhasil dihapus.', 'success');
+            closeDeleteModal();
+            if (state.buku.length === 1 && state.page > 1) state.page--;
+            loadBuku();
+        } else {
+            showToast(json.message || 'Gagal menghapus buku.', 'error');
+        }
+    } catch(e) { showToast('Error koneksi ke API.', 'error'); }
+
+    btn.disabled = false; btn.innerHTML = '🗑️ Hapus';
+}
+
+// =============================================
+// TOAST NOTIFICATION
+// =============================================
+function showToast(msg, type = 'success') {
+    const tc = document.getElementById('toastContainer');
+    const t  = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${msg}`;
+    tc.appendChild(t);
+    setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(40px)'; setTimeout(()=>t.remove(), 300); }, 3000);
+}
+
+// =============================================
+// LOADING
+// =============================================
+function setLoading(on) {
+    document.getElementById('loadingBar').classList.toggle('active', on);
+}
+
+// =============================================
+// UTILS
+// =============================================
+function esc(str) {
+    return String(str || '').replace(/[&<>"']/g, m =>
+        ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+
+// Keyboard shortcut: Escape to close modals
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        closeModal(); closeDeleteModal();
+    }
+});
+
+// =============================================
+// INIT
+// =============================================
+loadBuku();
+</script>
+</body>
+</html>
